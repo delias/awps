@@ -30,9 +30,124 @@ get_header(); ?>
 							comments_template();
 						endif;
 
-          endwhile;
-          
-          echo "Codea aquí!";
+					endwhile;
+					
+					/* Podio */
+					// Load dependencies
+					require __DIR__ . '/../vendor/autoload.php';
+
+					// Loading environment variables
+					$dotenv = new Dotenv\Dotenv(__DIR__);
+					$dotenv->load();
+
+					// Getting variables from .env for Authentication
+					define( 'CLIENT_ID', getenv( 'CLIENT_ID' ) );
+					$client_id = CLIENT_ID;
+					define( 'CLIENT_SECRET', getenv( 'CLIENT_SECRET' ) );
+					$client_secret = CLIENT_SECRET;
+
+					// CRM | APP Schools
+					define( 'SCHOOLS_APP_ID', getenv( 'SCHOOLS_APP_ID' ) );
+					$app_id_schools = SCHOOLS_APP_ID;
+					define( 'SCHOOLS_APP_TOKEN', getenv( 'SCHOOLS_APP_TOKEN' ) );
+					$app_tokens_schools = SCHOOLS_APP_TOKEN;
+
+					// CRM | APP Schools
+					define( 'CHAP_APP_ID', getenv( 'CHAP_APP_ID' ) );
+					$app_id_chap_app = CHAP_APP_ID;
+					define( 'CHAP_APP_TOKEN', getenv( 'CHAP_APP_TOKEN' ) );
+					$app_token_chap_app = CHAP_APP_TOKEN;
+
+					
+					// Schools 
+
+					// Authentication with App
+					Podio::setup($client_id, $client_secret);
+					Podio::authenticate_with_app($app_id_chap_app, $app_token_chap_app);
+					// You can now make API calls.
+
+					// View | Active, Paused, Vacant by RCM | Chap App
+					$view_id = 28163687;
+
+					// Aberdeen Public School
+					// $item_id = 384971115;
+					// $app_item_id =243;
+
+					/* ------------------------------------------------------------------------- */
+					/* Number of items in a view */
+
+					// $count = PodioItem::get_count($app_id);
+					$items_view = Podio::get("/item/app/{$app_id_chap_app}/count?view_id={$view_id}")->json_body();
+					// var_dump($count);
+					$count = $items_view['count'];
+					// print $count;
+
+					/* ------------------------------------------------------------------------- */
+
+					/* Get items from view */
+					$maxItems = 20;
+					// $filters = array('field_id' => 115371917 );
+					$offset = 1;
+					// $collection = PodioItem::filter_by_view($app_id_chap_app, $view_id, array('limit' => $maxItems, 'offset' => $offset, 'filters' => $filters ), array('fields' => 'items.view(micro)'));
+					$collection = PodioItem::filter_by_view($app_id_chap_app, $view_id, array('limit' => $maxItems, 'offset' => $offset), array('fields' => 'items.view(full)'));
+
+					// print_r($items);
+					//print $items;
+					// var_dump($collection);
+					
+					// Address Field (Location)
+					//$field_id = 103463282;
+
+					foreach ($collection as $item) {
+						print "item_id: " . $item->item_id . "</br>";
+						// print "app_item_id: " . $item->app_item_id . "</br>";
+						print "title: " . $item->title . "</br>";
+						// print "link: " . $item->link . "</br>";
+						// print "app_item_id_formatted: " . $item->app_item_id_formatted . "</br></br>";
+						// var_dump($item);
+						// print json_encode($item);
+						
+						// Podio::setup($client_id, $client_secret);
+						// Podio::authenticate_with_app($app_id_schools, $app_tokens_schools);
+						// $response = Podio::get("/item/{$item->item_id}/value/{$field_id}/v2");
+						// $obj = json_decode($response->body);
+						// $values = json_encode($obj->values);
+						// $item = json_decode($values);
+						// print "Address: " . $item[0]->value;
+						// print "Address: " . school_get_address($item->item_id);
+					}
+
+
+					function school_get_address($item_id) {
+						// Authentication with App
+						$client_id = CLIENT_ID;
+						$client_secret = CLIENT_SECRET;
+						$app_id_schools = SCHOOLS_APP_ID;
+						$app_tokens_schools = SCHOOLS_APP_TOKEN;
+
+						Podio::setup($client_id, $client_secret);
+						Podio::authenticate_with_app($app_id_schools, $app_tokens_schools);
+
+						// You can now make API calls.
+						$field_id = 103463282;
+
+						// https://developers.podio.com/doc/items/get-item-field-values-v2-144279511
+						$response = Podio::get("/item/{$item_id}/value/{$field_id}/v2");
+
+						// var_dump($response);
+
+						// print $response->body;
+						// print json_encode($response->body)->value;
+
+						$obj = json_decode($response->body);
+						// var_dump($obj);
+						$values = json_encode($obj->values);
+
+						$item = json_decode($values);
+						// var_dump($item);
+						return $item[0]->value;
+						// var_dump($item);
+					}
 
 					?>
 

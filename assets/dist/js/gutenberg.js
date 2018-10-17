@@ -164,33 +164,35 @@ var registerBlockType = wp.blocks.registerBlockType;
 var withAPIData = wp.components.withAPIData;
 
 registerBlockType('gutenberg-test/latest-post', {
-    title: 'Latest Post',
-    icon: 'megaphone',
-    category: 'widgets',
+	title: 'Latest Post',
+	icon: 'megaphone',
+	category: 'widgets',
 
-    edit: withAPIData(function () {
-        return {
-            posts: '/wp/v2/posts?per_page=1'
-        };
-    })(function (_ref) {
-        var posts = _ref.posts,
-            className = _ref.className;
+	edit: withAPIData(function () {
+		return {
+			posts: '/wp/v2/posts?per_page=1'
+		};
+	})(function (_ref) {
+		var posts = _ref.posts,
+		    className = _ref.className;
 
-        if (!posts.data) {
-            return 'loading !';
-        }
-        if (posts.data.length === 0) {
-            return 'No posts';
-        }
-        var post = posts.data[0];
+		var post;
+		if (!posts.data) {
+			return 'loading !';
+		}
+		if (0 === posts.data.length) {
+			return 'No posts';
+		}
+		post = posts.data[0];
 
-        return React.createElement('a', { className: className, href: post.link }, post.title.rendered);
-    }),
+		return React.createElement('a', { className: className, href: post.link }, post.title.rendered);
+	}),
 
-    save: function save() {
-        // Rendering in PHP
-        return null;
-    }
+	save: function save() {
+
+		// Rendering in PHP
+		return null;
+	}
 });
 
 /***/ })
